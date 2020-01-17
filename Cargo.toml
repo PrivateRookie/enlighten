@@ -10,5 +10,6 @@ edition = "2018"
 cursive = "0.13.0"
 reqwest = { version = "0.10", features = ["blocking", "json"] }
 serde = {version ="1.0.104", features=["derive"]}
+thiserror = "1.0.9"
 log = "*"
 log4rs = "*"
