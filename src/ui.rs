@@ -2,13 +2,22 @@ use cursive::traits::*;
 use cursive::view::Scrollable;
 use cursive::views::{
     Button, Dialog, DummyView, EditView, LayerPosition, LinearLayout, ListView, Panel, RadioGroup,
-    StackView, TextView,
+    SelectView, StackView, TextView,
 };
 use cursive::Cursive;
+use rand::Rng;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use crate::api::*;
+
+const CN_PUNCTIONS: [char; 74] = [
+    '！', '？', '｡', '＂', '＃', '＄', '％', '＆', '＇', '（', '）', '＊', '＋', '，', '－', '／',
+    '：', '；', '＜', '＝', '＞', '＠', '［', '＼', '］', '＾', '＿', '｀', '｛', '｜', '｝', '～',
+    '｟', '｠', '｢', '｣', '､', '、', '〃', '》', '「', '」', '『', '』', '【', '】', '〔', '〕',
+    '〖', '〗', '〘', '〙', '〚', '〛', '〜', '〝', '〞', '〟', '〰', '〾', '〿', '–', '—', '‘',
+    '’', '‛', '“', '”', '„', '‟', '…', '‧', '﹏', '.',
+];
 
 #[derive(Default, Debug, Clone)]
 struct MSG {
@@ -18,6 +27,26 @@ struct MSG {
     page_size: usize,
     index: usize,
     method: Method,
+}
+
+enum MaskLevel {
+    Empty,
+    Light,
+    Medium,
+    Heavy,
+    Full,
+}
+
+impl Into<String> for MaskLevel {
+    fn into(self) -> String {
+        match self {
+            MaskLevel::Empty => "无".to_string(),
+            MaskLevel::Light => "轻".to_string(),
+            MaskLevel::Medium => "中".to_string(),
+            MaskLevel::Heavy => "重".to_string(),
+            MaskLevel::Full => "全".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -58,6 +87,7 @@ pub fn render() -> impl View {
     let data_remark = data.clone();
     let data_trans = data.clone();
     let data_sx = data.clone();
+    let data_mask = data.clone();
     let data_form = data.clone();
     let data_prev_item = data.clone();
     let data_next_item = data.clone();
@@ -74,7 +104,6 @@ pub fn render() -> impl View {
                 .scroll_y(true),
         )
         .title("注释")
-        .with_id("content_v")
         .full_screen(),
     );
     stack_view.add_fullscreen_layer(
@@ -85,7 +114,6 @@ pub fn render() -> impl View {
                 .scroll_y(true),
         )
         .title("翻译")
-        .with_id("translation_v")
         .full_screen(),
     );
     stack_view.add_fullscreen_layer(
@@ -96,7 +124,6 @@ pub fn render() -> impl View {
                 .scroll_y(true),
         )
         .title("赏析")
-        .with_id("shangxi_v")
         .full_screen(),
     );
     stack_view.add_fullscreen_layer(
@@ -107,7 +134,6 @@ pub fn render() -> impl View {
                 .scroll_y(true),
         )
         .title("正文")
-        .with_id("remark_v")
         .full_screen(),
     );
 
@@ -183,9 +209,24 @@ pub fn render() -> impl View {
                 LinearLayout::horizontal()
                     .child(DummyView.full_width())
                     .child(
-                        Button::new_raw("[搜索]", move |s| render_form(s, data_form.clone()))
+                        Button::new_raw("[ 搜索 ]", move |s| render_form(s, data_form.clone()))
                             .with_id("search_button"),
                     )
+                    .child(Button::new_raw("[ 背诵 ]", move |s| {
+                        let d = data_mask.clone();
+                        let mut select = SelectView::new().autojump();
+                        select.add_item("无", MaskLevel::Empty);
+                        select.add_item("轻", MaskLevel::Light);
+                        select.add_item("中", MaskLevel::Medium);
+                        select.add_item("重", MaskLevel::Heavy);
+                        select.add_item("全", MaskLevel::Full);
+                        select.set_on_submit(move |s: &mut Cursive, val: &MaskLevel| {
+                            mask_content(s, d.clone(), val)
+                        });
+                        s.add_layer(Dialog::around(select).button("关闭", |s| {
+                            s.pop_layer();
+                        }))
+                    }))
                     .child(TextView::new(" || "))
                     .child(Button::new_raw("[上一个]", move |s| {
                         prev_item(s, data_prev_item.clone())
@@ -348,7 +389,7 @@ fn next_item(s: &mut Cursive, data: Rc<RenderData>) {
             s.cb_sink()
                 .clone()
                 .send(Box::new(|s| update(s, msg)))
-                .unwrap();
+                .expect("发送错误");
             data.index.set(idx + 1);
         }
         None => s.add_layer(Dialog::info("内容为空!")),
@@ -519,4 +560,37 @@ fn visible_view(s: &mut Cursive, id: &str, data: Rc<RenderData>) {
         view.move_to_front(LayerPosition::FromBack(pos));
     })
     .unwrap();
+}
+
+fn mask_content(s: &mut Cursive, data: Rc<RenderData>, level: &MaskLevel) {
+    let mut rng = rand::thread_rng();
+    let level = match level {
+        MaskLevel::Empty => 0.0,
+        MaskLevel::Light => 30.0,
+        MaskLevel::Medium => 60.0,
+        MaskLevel::Heavy => 80.0,
+        MaskLevel::Full => 100.0,
+    };
+    let art = data.get_artitle(data.index.get());
+    if let Some(art) = art {
+        let masked_content: String = art
+            .content
+            .chars()
+            .map(|c: char| {
+                if !CN_PUNCTIONS.contains(&c) && !c.is_control() && !c.is_whitespace() {
+                    if (rng.gen::<f32>() * 100.0) < level {
+                        '_'
+                    } else {
+                        c
+                    }
+                } else {
+                    c
+                }
+            })
+            .collect();
+        s.call_on_id("content_text", |view: &mut TextView| {
+            view.set_content(masked_content)
+        })
+        .unwrap();
+    }
 }

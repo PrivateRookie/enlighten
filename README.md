@@ -7,6 +7,34 @@ Power By [Cursive](https://github.com/gyscos/cursive)
 
 ## 安装
 
+安装 ncurses
+
+### Archlinux
+
+```
+pacman -S ncurses
+```
+
+### Ubuntu
+
+```
+apt-get install libncursesw5-dev
+```
+
+### Fedora
+
+```
+yum install ncurses-devel
+```
+
+### macOS
+
+```
+brew install ncurses
+```
+
+安装 enlighten
+
 ```bash
 cargo install --git https://github.com/PrivateRookie/enlighten.git
 
@@ -18,8 +46,8 @@ enlighten
 
 ## TODO
 
-- [ ] 支持所有中华古诗文数据库API
-- [ ] 添加可变mask背诵功能
+- [x] 支持所有中华古诗文数据库API(API都已对接，作者和名句页面WIP)
+- [x] 添加可变mask背诵功能
 - [ ] 增加历史记录功能
 - [ ] 添加收藏夹功能
 - [ ] 添加快捷键绑定
