@@ -99,7 +99,7 @@ pub fn render() -> impl View {
     stack_view.add_fullscreen_layer(
         Panel::new(
             TextView::empty()
-                .with_id("remark_text")
+                .with_name("remark_text")
                 .scrollable()
                 .scroll_y(true),
         )
@@ -109,7 +109,7 @@ pub fn render() -> impl View {
     stack_view.add_fullscreen_layer(
         Panel::new(
             TextView::empty()
-                .with_id("translation_text")
+                .with_name("translation_text")
                 .scrollable()
                 .scroll_y(true),
         )
@@ -119,7 +119,7 @@ pub fn render() -> impl View {
     stack_view.add_fullscreen_layer(
         Panel::new(
             TextView::empty()
-                .with_id("shangxi_text")
+                .with_name("shangxi_text")
                 .scrollable()
                 .scroll_y(true),
         )
@@ -129,7 +129,7 @@ pub fn render() -> impl View {
     stack_view.add_fullscreen_layer(
         Panel::new(
             TextView::empty()
-                .with_id("content_text")
+                .with_name("content_text")
                 .scrollable()
                 .scroll_y(true),
         )
@@ -143,8 +143,8 @@ pub fn render() -> impl View {
                 .child(
                     Panel::new(
                         ListView::new()
-                            .child("标题:", TextView::new("-").with_id("title"))
-                            .child("作者:", TextView::new("-").with_id("writer"))
+                            .child("标题:", TextView::new("-").with_name("title"))
+                            .child("作者:", TextView::new("-").with_name("writer"))
                             .child(
                                 "正文:",
                                 LinearLayout::horizontal()
@@ -153,7 +153,7 @@ pub fn render() -> impl View {
                                             visible_view(s, "c", data_content.clone())
                                         })
                                         .disabled()
-                                        .with_id("content_btn"),
+                                        .with_name("content_btn"),
                                     )
                                     .child(DummyView.full_width()),
                             )
@@ -165,7 +165,7 @@ pub fn render() -> impl View {
                                             visible_view(s, "r", data_remark.clone())
                                         })
                                         .disabled()
-                                        .with_id("remark_btn"),
+                                        .with_name("remark_btn"),
                                     )
                                     .child(DummyView.full_width()),
                             )
@@ -177,7 +177,7 @@ pub fn render() -> impl View {
                                             visible_view(s, "t", data_trans.clone())
                                         })
                                         .disabled()
-                                        .with_id("translation_btn"),
+                                        .with_name("translation_btn"),
                                     )
                                     .child(DummyView.full_width()),
                             )
@@ -189,20 +189,20 @@ pub fn render() -> impl View {
                                             visible_view(s, "s", data_sx.clone())
                                         })
                                         .disabled()
-                                        .with_id("shangxi_btn"),
+                                        .with_name("shangxi_btn"),
                                     )
                                     .child(DummyView.full_width()),
                             )
-                            .child("总数:", TextView::new("-").with_id("total"))
-                            .child("页数:", TextView::new("-").with_id("page_page"))
-                            .child("索引:", TextView::new("-").with_id("index"))
-                            .child("方法:", TextView::new("-").with_id("method")),
+                            .child("总数:", TextView::new("-").with_name("total"))
+                            .child("页数:", TextView::new("-").with_name("page_page"))
+                            .child("索引:", TextView::new("-").with_name("index"))
+                            .child("方法:", TextView::new("-").with_name("method")),
                     )
                     .title("信息")
                     .min_width(20)
                     .full_height(),
                 )
-                .child(stack_view.with_id("stack_view").min_width(80)),
+                .child(stack_view.with_name("stack_view").min_width(80)),
         )
         .child(
             Panel::new(
@@ -210,7 +210,7 @@ pub fn render() -> impl View {
                     .child(DummyView.full_width())
                     .child(
                         Button::new_raw("[ 搜索 ]", move |s| render_form(s, data_form.clone()))
-                            .with_id("search_button"),
+                            .with_name("search_button"),
                     )
                     .child(Button::new_raw("[ 背诵 ]", move |s| {
                         let d = data_mask.clone();
@@ -253,10 +253,10 @@ fn render_form(s: &mut Cursive, data: Rc<RenderData>) {
     let mut method_group: RadioGroup<Method> = RadioGroup::new();
     method_group.set_on_change(|s: &mut Cursive, v| match v {
         Method::Page => s
-            .call_on_id("val", |view: &mut EditView| view.disable())
+            .call_on_name("val", |view: &mut EditView| view.disable())
             .unwrap(),
         _ => s
-            .call_on_id("val", |view: &mut EditView| view.enable())
+            .call_on_name("val", |view: &mut EditView| view.enable())
             .unwrap(),
     });
     s.add_layer(
@@ -274,11 +274,11 @@ fn render_form(s: &mut Cursive, data: Rc<RenderData>) {
                     )
                     .child(
                         "页数",
-                        EditView::new().content("1").with_id("page").fixed_width(10),
+                        EditView::new().content("1").with_name("page").fixed_width(10),
                     )
                     .child(
                         "输入",
-                        EditView::new().disabled().with_id("val").fixed_width(10),
+                        EditView::new().disabled().with_name("val").fixed_width(10),
                     ),
             )
             .button("提交", move |s| on_submit(s, &method_group, data.clone()))
@@ -291,10 +291,10 @@ fn render_form(s: &mut Cursive, data: Rc<RenderData>) {
 fn on_submit(s: &mut Cursive, m_group: &RadioGroup<Method>, data: Rc<RenderData>) {
     let method = m_group.selection();
     let page_raw = s
-        .call_on_id("page", |view: &mut EditView| view.get_content())
+        .call_on_name("page", |view: &mut EditView| view.get_content())
         .unwrap();
     let val_raw = s
-        .call_on_id("val", |view: &mut EditView| view.get_content())
+        .call_on_name("val", |view: &mut EditView| view.get_content())
         .unwrap();
 
     if let Ok(page) = page_raw.parse::<usize>() {
@@ -480,7 +480,7 @@ fn next_page(s: &mut Cursive, data: Rc<RenderData>) {
 
 fn update(s: &mut Cursive, msg: MSG) {
     fn render_label(s: &mut Cursive, id: &str, msg: &MSG) {
-        s.call_on_id(id, |view: &mut Button| {
+        s.call_on_name(id, |view: &mut Button| {
             if let Some(_) = msg.article.remark {
                 view.enable();
                 view.set_label_raw("[ √ ]");
@@ -491,11 +491,11 @@ fn update(s: &mut Cursive, msg: MSG) {
         .unwrap();
     }
 
-    s.call_on_id("title", |view: &mut TextView| {
+    s.call_on_name("title", |view: &mut TextView| {
         view.set_content(msg.article.title.to_string())
     })
     .unwrap();
-    s.call_on_id("writer", |view: &mut TextView| {
+    s.call_on_name("writer", |view: &mut TextView| {
         view.set_content(msg.article.writer.to_string())
     })
     .unwrap();
@@ -503,19 +503,19 @@ fn update(s: &mut Cursive, msg: MSG) {
     render_label(s, "remark_btn", &msg);
     render_label(s, "translation_btn", &msg);
     render_label(s, "shangxi_btn", &msg);
-    s.call_on_id("total", |view: &mut TextView| {
+    s.call_on_name("total", |view: &mut TextView| {
         view.set_content(msg.total.to_string())
     })
     .unwrap();
-    s.call_on_id("page_page", |view: &mut TextView| {
+    s.call_on_name("page_page", |view: &mut TextView| {
         view.set_content(msg.page.to_string())
     })
     .unwrap();
-    s.call_on_id("index", |view: &mut TextView| {
+    s.call_on_name("index", |view: &mut TextView| {
         view.set_content(msg.index.to_string())
     })
     .unwrap();
-    s.call_on_id("method", |view: &mut TextView| {
+    s.call_on_name("method", |view: &mut TextView| {
         let content = match msg.method.clone() {
             Method::Page => "总览".to_string(),
             Method::Dynasty(dynasty) => format!("朝代 - {}", dynasty),
@@ -526,29 +526,29 @@ fn update(s: &mut Cursive, msg: MSG) {
     })
     .unwrap();
 
-    s.call_on_id("content_text", |view: &mut TextView| {
+    s.call_on_name("content_text", |view: &mut TextView| {
         view.set_content(msg.article.content.to_string())
     })
     .unwrap();
 
-    s.call_on_id("remark_text", |view: &mut TextView| {
+    s.call_on_name("remark_text", |view: &mut TextView| {
         view.set_content(msg.article.remark.clone().unwrap())
     })
     .unwrap();
 
-    s.call_on_id("translation_text", |view: &mut TextView| {
+    s.call_on_name("translation_text", |view: &mut TextView| {
         view.set_content(msg.article.translation.clone().unwrap())
     })
     .unwrap();
 
-    s.call_on_id("shangxi_text", |view: &mut TextView| {
+    s.call_on_name("shangxi_text", |view: &mut TextView| {
         view.set_content(msg.article.shangxi.clone().unwrap())
     })
     .unwrap();
 }
 
 fn visible_view(s: &mut Cursive, id: &str, data: Rc<RenderData>) {
-    s.call_on_id("stack_view", |view: &mut StackView| {
+    s.call_on_name("stack_view", |view: &mut StackView| {
         let pos = data
             .sview_vec
             .borrow()
@@ -588,7 +588,7 @@ fn mask_content(s: &mut Cursive, data: Rc<RenderData>, level: &MaskLevel) {
                 }
             })
             .collect();
-        s.call_on_id("content_text", |view: &mut TextView| {
+        s.call_on_name("content_text", |view: &mut TextView| {
             view.set_content(masked_content)
         })
         .unwrap();
