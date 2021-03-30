@@ -4,7 +4,7 @@ use cursive::views::{
     Button, Dialog, DummyView, EditView, LayerPosition, LinearLayout, ListView, Panel, RadioGroup,
     SelectView, StackView, TextView,
 };
-use cursive::Cursive;
+use cursive::{Cursive, CursiveExt};
 use rand::Rng;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
